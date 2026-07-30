@@ -1,21 +1,21 @@
 
 
 namespace PetFamily.Domain;
-
-public class Pet
+// сделать свой ресалт при валидации
+public class Pet // сделать богатство
 {
     //ef core
     private Pet()
     {
     }
 
-    private Pet(string name, string description)
+    private Pet(string name, string description) 
     {
         Name = name;
         Description = description;
     }
     
-    public Guid? Id { get; private set; }
+    public Guid Id { get; private set; }
     
     public string Name { get; private set; } = null!;
     
@@ -49,7 +49,7 @@ public class Pet
     
     public DateTime CreatedAt {get; private set;}
 
-    public static Pet Create(string name, string description)
+    public static Pet Create(string name, string description) //
     {
         if (string.IsNullOrWhiteSpace(name))
         {
