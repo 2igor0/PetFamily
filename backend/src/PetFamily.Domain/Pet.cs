@@ -48,6 +48,12 @@ public class Pet // сделать богатство
     public IReadOnlyList<DonationDetails> DonationDetails { get; private set; }
     
     public DateTime CreatedAt {get; private set;}
+    
+    
+    private List<PetPhoto> _photos = []; // добавлять
+    
+    public IReadOnlyList<PetPhoto> Photos => _photos;
+    
 
     public static Pet Create(string name, string description) //
     {
