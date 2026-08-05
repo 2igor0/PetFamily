@@ -1,10 +1,12 @@
 ﻿namespace PetFamily.Domain;
 
+public record FullName(string FirstName, string LastName, string? Patronymic);
+
 public class Volunteer // доделать богатство 
 {
     public Guid Id { get; private set; }
-    
-    public record FullName(string FirstName, string LastName, string? Patronymic);
+
+    public FullName FullName = new FullName(null, null, null); // ???
     
     public string Description { get; private set; } = null!;
     

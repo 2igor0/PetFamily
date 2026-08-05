@@ -2,6 +2,7 @@
 
 namespace PetFamily.Domain;
 // сделать свой ресалт при валидации
+
 public class Pet // сделать богатство
 {
     //ef core
@@ -19,7 +20,7 @@ public class Pet // сделать богатство
     
     public string Name { get; private set; } = null!;
     
-    public string Species { get; private set; } = null!; //вид, кошка или собака
+    public string Species { get; private set; } = null!; //вид, кошка или собака енам или валуе обжект HasConversion<string>()
     
     public string Description { get; private set; } = null!; // описание
     
@@ -35,7 +36,7 @@ public class Pet // сделать богатство
 
     public int Height { get; private set; }
 
-    public int OwnerPhoneNumber { get; private set; } 
+    public int OwnerPhoneNumber { get; private set; } // в отдельный value
 
     public bool IsNeutered { get; private set; }  // кастрирован или нет
 
@@ -43,7 +44,7 @@ public class Pet // сделать богатство
 
     public bool IsVaccinated { get; private set; } 
     
-    public string HelpStatus { get; private set; } // Нуждается в помощи/Ищет дом/ Нашел дом
+    public string HelpStatus { get; private set; } // Нуждается в помощи/Ищет дом/ Нашел дом енам HasConversion<string>() разобраться
     
     public IReadOnlyList<DonationDetails> DonationDetails { get; private set; }
     

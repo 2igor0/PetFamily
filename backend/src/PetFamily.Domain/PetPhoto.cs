@@ -13,7 +13,7 @@ public record PetPhoto
         IsMain = isMain;
     }
             
-    public string Path { get; set; } = null!;
+    public string Path { get; } = null!;
     
-    public bool IsMain { get; set; }
+    public bool IsMain { get; }
 }

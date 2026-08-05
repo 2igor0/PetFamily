@@ -2,6 +2,10 @@ namespace PetFamily.Domain;
 
 public class DonationDetails
 {
+    public DonationDetails()
+    {
+    }
+    
     public DonationDetails(string name, string description)
     {
         if  (string.IsNullOrEmpty(name))

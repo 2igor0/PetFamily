@@ -7,12 +7,13 @@ namespace PetFamily.Infrastructure;
 
 public class ApplicationDbContext : DbContext
 {
-    private new const string Database = "Database";
+    private const string Database = "Database";
 
-    public DbSet<Pet> Modules => Set<Pet>();
+    public DbSet<Pet> Pets => Set<Pet>();
 
     private readonly IConfiguration _configuration;
 
+    // Оставляем ТОЛЬКО ОДИН конструктор!
     public ApplicationDbContext(IConfiguration configuration)
     {
         _configuration = configuration;
@@ -22,13 +23,11 @@ public class ApplicationDbContext : DbContext
     {
         optionsBuilder.UseNpgsql(_configuration.GetConnectionString(Database));
         optionsBuilder.UseSnakeCaseNamingConvention();
-        optionsBuilder.UseLoggerFactory(CreateLoggerFactory());
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
     }
-
-    private ILoggerFactory CreateLoggerFactory() => LoggerFactory.Create(builder => { builder.AddConsole(); });
 }
