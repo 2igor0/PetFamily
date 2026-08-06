@@ -1,25 +1,26 @@
 
 
 namespace PetFamily.Domain;
+// сделать свой ресалт при валидации
 
-public class Pet
+public class Pet // сделать богатство
 {
     //ef core
     private Pet()
     {
     }
 
-    private Pet(string name, string description)
+    private Pet(string name, string description) 
     {
         Name = name;
         Description = description;
     }
     
-    public Guid? Id { get; private set; }
+    public Guid Id { get; private set; }
     
     public string Name { get; private set; } = null!;
     
-    public string Species { get; private set; } = null!; //вид, кошка или собака
+    public string Species { get; private set; } = null!; //вид, кошка или собака енам или валуе обжект HasConversion<string>()
     
     public string Description { get; private set; } = null!; // описание
     
@@ -35,7 +36,7 @@ public class Pet
 
     public int Height { get; private set; }
 
-    public int OwnerPhoneNumber { get; private set; } 
+    public int OwnerPhoneNumber { get; private set; } // в отдельный value
 
     public bool IsNeutered { get; private set; }  // кастрирован или нет
 
@@ -43,13 +44,19 @@ public class Pet
 
     public bool IsVaccinated { get; private set; } 
     
-    public string HelpStatus { get; private set; } // Нуждается в помощи/Ищет дом/ Нашел дом
+    public string HelpStatus { get; private set; } // Нуждается в помощи/Ищет дом/ Нашел дом енам HasConversion<string>() разобраться
     
     public IReadOnlyList<DonationDetails> DonationDetails { get; private set; }
     
     public DateTime CreatedAt {get; private set;}
+    
+    
+    private List<PetPhoto> _photos = []; // добавлять
+    
+    public IReadOnlyList<PetPhoto> Photos => _photos;
+    
 
-    public static Pet Create(string name, string description)
+    public static Pet Create(string name, string description) //
     {
         if (string.IsNullOrWhiteSpace(name))
         {

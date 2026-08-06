@@ -10,4 +10,10 @@
       <ProjectReference Include="..\PetFamily.Application\PetFamily.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="11.0.0-preview.6.26359.118" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    </ItemGroup>
+
 </Project>
