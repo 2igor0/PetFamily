@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Microsoft.Extensions.Logging;
 using PetFamily.Domain.PetManagement.ValueObjects;
 using PetFamily.Domain.Shared;
 using PetFamily.Domain.Shared.DifferentId;
@@ -7,54 +8,63 @@ using PetFamily.Domain.VolunteerManagement.ValueObjects;
 
 namespace PetFamily.Application.modules.CreateVolunteer;
 
-public class CreateVolunteerHandler(IVolunteerRepository repository)
+public class CreateVolunteerHandler(
+    IVolunteerRepository repository,
+    ILogger<CreateVolunteerHandler> logger)
 {
-    public async Task<Result<Guid, Error>> Execute(CreateVolunteerRequest request, CancellationToken token = default)
+    public async Task<Result<Guid, Error>> Execute(
+        CreateVolunteerRequest request,
+        CancellationToken token = default)
     {
-        var phoneNumber = PhoneNumber.Create(request.PhoneNumber);
-        if (phoneNumber.IsFailure)
-            return phoneNumber.Error; // ну тут как-то над выводить именно Error для валидации и тд
-
-        var id = IdVolunteer.CreateNewId();
-        
-        var fullName = FullName.Create(request.FirstName, request.LastName, request.Patronymic);
-        if (fullName.IsFailure)
-            return fullName.Error;
-        
-        var description = Description.Create(request.Description);
-        if (description.IsFailure)
-            return description.Error; 
-        
-        var yearsOfExperience = PhysicalAttributes.Create(request.YearsOfExperience);
-        if (yearsOfExperience.IsFailure)
-            return yearsOfExperience.Error;
-
-        var socialLinks = new List<SocialNetwork>();
-        if (request.SocialLinks != null)
+        var socialNetworks = new List<SocialNetwork>();
+        if (request.SocialLinks is not null)
+        {
             foreach (var requestSocialLink in request.SocialLinks)
             {
-                var socialLink = SocialNetwork.Create(requestSocialLink.Name, requestSocialLink.Url);
-                if (socialLink.IsFailure)
-                    return socialLink.Error;
+                var socialNetwork = SocialNetwork.Create(requestSocialLink.Name, requestSocialLink.Url);
+                if (socialNetwork.IsFailure)
+                    return socialNetwork.Error;
 
-                socialLinks.Add(socialLink.Value);
+                socialNetworks.Add(socialNetwork.Value);
             }
-    
-        var donationsRequisites = new List<DonationDetails>();
-        if (request.DonationsRequisites != null)
-            foreach (var donationsRequisite in request.DonationsRequisites)
+        }
+
+        var donationDetails = new List<DonationDetails>();
+        if (request.DonationsRequisites is not null)
+        {
+            foreach (var requestDonation in request.DonationsRequisites)
             {
-                var validDonationsRequisite = DonationDetails.Create(donationsRequisite.Name, donationsRequisite.Description); 
-                if(validDonationsRequisite.IsFailure)
-                    return validDonationsRequisite.Error;
+                var details = DonationDetails.Create(requestDonation.Name, requestDonation.Description);
+                if (details.IsFailure)
+                    return details.Error;
 
-                donationsRequisites.Add(validDonationsRequisite.Value);
+                donationDetails.Add(details.Value);
             }
-        
-        // тут проверка что ли хз, вроде надо в контроллере
-        var volunteer = Volunteer.Create(fullName.Value, description.Value, yearsOfExperience.Value, phoneNumber.Value, id, socialLinks, donationsRequisites).Value;
+        }
+
+        var volunteerResult = Volunteer.Create(
+            IdVolunteer.CreateNew(),
+            request.FirstName,
+            request.LastName,
+            request.Patronymic,
+            request.Email,
+            request.Description,
+            request.YearsOfExperience,
+            request.PhoneNumber,
+            socialNetworks,
+            donationDetails);
+
+        if (volunteerResult.IsFailure)
+            return volunteerResult.Error;
+
+        var volunteer = volunteerResult.Value;
+
         await repository.Add(volunteer, token);
-        
+
+        logger.LogInformation(
+            "Volunteer {VolunteerId} was created successfully",
+            volunteer.Id.Value);
+
         return volunteer.Id.Value;
     }
 }

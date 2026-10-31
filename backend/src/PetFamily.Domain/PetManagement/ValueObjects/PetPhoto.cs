@@ -5,23 +5,35 @@ namespace PetFamily.Domain.PetManagement.ValueObjects;
 
 public record PetPhoto
 {
+    public string Path { get; }
+
+    public bool IsMain { get; }
+
+    private PetPhoto()
+    {
+        Path = null!;
+    }
+
     private PetPhoto(string path, bool isMain)
     {
         Path = path;
         IsMain = isMain;
     }
-            
-    public string Path { get; }
-    
-    public bool IsMain { get; }
 
-    public static Result<PetPhoto, Error> Create(string path, bool isMain)
+    public static Result<PetPhoto, Error> Create(string? path, bool isMain)
     {
         if (string.IsNullOrWhiteSpace(path))
-        {
-            return Error.Validation("path.is.invalid", "path is null or empty");
-        }
-        
-        return new PetPhoto(path, isMain);
+            return Error.Validation("pet.photo.path.is.invalid", "Photo path cannot be empty.");
+
+        var trimmedPath = path.Trim();
+
+        if (trimmedPath.Length > Constants.MaxMediumTextLength)
+            return Error.Validation(
+                "pet.photo.path.is.too.long",
+                $"Photo path cannot exceed {Constants.MaxMediumTextLength} characters.");
+
+        return new PetPhoto(trimmedPath, isMain);
     }
+
+    public PetPhoto WithIsMain(bool isMain) => new(Path, isMain);
 }

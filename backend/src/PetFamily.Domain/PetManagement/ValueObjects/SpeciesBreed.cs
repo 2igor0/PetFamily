@@ -1,30 +1,35 @@
 ﻿using CSharpFunctionalExtensions;
-using PetFamily.Domain.PetManagement.SpeciesAndBreed;
 using PetFamily.Domain.Shared;
+using PetFamily.Domain.Shared.DifferentId;
 
 namespace PetFamily.Domain.PetManagement.ValueObjects;
 
 public record SpeciesBreed
 {
-    public Species SpeciesId { get; }
-    public Guid BreedId { get; }
+    public IdSpecies SpeciesId { get; }
 
-    // Для EF Core / сериализации
+    public IdBreed BreedId { get; }
+
     private SpeciesBreed()
     {
-        
+        SpeciesId = IdSpecies.Empty();
+        BreedId = IdBreed.Empty();
     }
 
-    private SpeciesBreed(Species species, Guid breedId)
+    private SpeciesBreed(IdSpecies speciesId, IdBreed breedId)
     {
-        SpeciesId = species;
+        SpeciesId = speciesId;
         BreedId = breedId;
     }
 
-    public static Result<SpeciesBreed, Error> Create(Species species, Guid breedId)
+    public static Result<SpeciesBreed, Error> Create(IdSpecies speciesId, IdBreed breedId)
     {
-        // валидация
+        if (speciesId.Value == Guid.Empty)
+            return Error.Validation("species.id.is.invalid", "Species id cannot be empty.");
 
-        return new SpeciesBreed(species, breedId);
+        if (breedId.Value == Guid.Empty)
+            return Error.Validation("breed.id.is.invalid", "Breed id cannot be empty.");
+
+        return new SpeciesBreed(speciesId, breedId);
     }
 }

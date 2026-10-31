@@ -9,7 +9,7 @@ public record IdVolunteer
     
     public Guid Value { get; }
 
-    public static IdVolunteer CreateNewId() => new(Guid.NewGuid());
+    public static IdVolunteer CreateNew() => new(Guid.NewGuid());
     
     public static IdVolunteer Empty() => new(Guid.Empty);
     

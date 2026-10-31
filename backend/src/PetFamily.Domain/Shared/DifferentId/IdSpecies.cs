@@ -9,7 +9,7 @@ public record IdSpecies
     
     public Guid Value { get; }
 
-    public static IdSpecies CreateNewId() => new(Guid.NewGuid());
+    public static IdSpecies CreateNew() => new(Guid.NewGuid());
     
     public static IdSpecies Empty() => new(Guid.Empty);
     

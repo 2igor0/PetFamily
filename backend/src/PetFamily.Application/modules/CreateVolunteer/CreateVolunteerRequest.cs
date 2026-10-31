@@ -6,8 +6,9 @@ public record CreateVolunteerRequest(
     string FirstName,
     string LastName,
     string? Patronymic,
+    string Email,
     string Description,
     int YearsOfExperience,
     string PhoneNumber,
     IEnumerable<SocialLinkDto>? SocialLinks,
-    IEnumerable<DonationsRequisites>? DonationsRequisites);   
+    IEnumerable<DonationsRequisites>? DonationsRequisites);

@@ -11,96 +11,116 @@ public class VolunteerConfiguration : IEntityTypeConfiguration<Volunteer>
     {
         builder.ToTable("volunteers");
 
-        // Первичный ключ
-        builder.HasKey(v => v.Id);
+        builder.HasKey(volunteer => volunteer.Id);
 
-        // 1. Value Object: FullName
-        builder.ComplexProperty(v => v.FullName, fnBuilder =>
+        builder.ComplexProperty(volunteer => volunteer.FullName, fullName =>
         {
-            fnBuilder.Property(fn => fn.FirstName)
-                .IsRequired()
-                .HasMaxLength(Constants.MaxLowTextLength)
-                .HasColumnName("first_name");
-
-            fnBuilder.Property(fn => fn.LastName)
-                .IsRequired()
-                .HasMaxLength(Constants.MaxLowTextLength)
-                .HasColumnName("last_name");
-
-            fnBuilder.Property(fn => fn.Patronymic)
-                .IsRequired(false)
-                .HasMaxLength(Constants.MaxLowTextLength)
-                .HasColumnName("patronymic");
-        });
-
-        // 2. Value Object: Description
-        builder.ComplexProperty(v => v.Description, dBuilder =>
-        {
-            dBuilder.Property(d => d.Value)
-                .IsRequired()
-                .HasMaxLength(Constants.MaxHighDescription)
-                .HasColumnName("description");
-        });
-
-        // 3. Value Object: YearsOfExperience (PhysicalAttributes или ваш VO опыта)
-        builder.ComplexProperty(v => v.YearsOfExperience, yBuilder =>
-        {
-            yBuilder.Property(y => y.Value)
-                .IsRequired()
-                .HasColumnName("years_of_experience");
-        });
-
-        // 4. Value Object: OwnerPhoneNumber
-        builder.ComplexProperty(v => v.OwnerPhoneNumber, pBuilder =>
-        {
-            pBuilder.Property(p => p.Value)
-                .IsRequired()
-                .HasMaxLength(Constants.MaxLowTextLength)
-                .HasColumnName("phone_number");
-        });
-
-        // 5. JSON Коллекция: DonationDetails
-        builder.OwnsMany(v => v.DonationDetails, details =>
-        {
-            details.ToJson("donation_details");
-
-            details.Property(d => d.Name)
+            fullName.Property(name => name.FirstName)
+                .HasColumnName("first_name")
                 .IsRequired()
                 .HasMaxLength(Constants.MaxLowTextLength);
 
-            details.Property(d => d.Description)
+            fullName.Property(name => name.LastName)
+                .HasColumnName("last_name")
                 .IsRequired()
+                .HasMaxLength(Constants.MaxLowTextLength);
+
+            fullName.Property(name => name.Patronymic)
+                .HasColumnName("patronymic")
                 .HasMaxLength(Constants.MaxLowTextLength);
         });
 
-        // Информируем EF Core работать напрямую с приватным бэкинг-полем _donationDetails
-        builder.Navigation(v => v.DonationDetails)
+        builder.ComplexProperty(volunteer => volunteer.Email, email =>
+        {
+            email.Property(value => value.Value)
+                .HasColumnName("email")
+                .IsRequired()
+                .HasMaxLength(Constants.MaxEmailLength);
+        });
+
+        builder.ComplexProperty(volunteer => volunteer.Description, description =>
+        {
+            description.Property(value => value.Value)
+                .HasColumnName("description")
+                .IsRequired()
+                .HasMaxLength(Constants.MaxHighDescription);
+        });
+
+        builder.ComplexProperty(volunteer => volunteer.YearsOfExperience, experience =>
+        {
+            experience.Property(value => value.Value)
+                .HasColumnName("years_of_experience")
+                .IsRequired();
+        });
+
+        builder.ComplexProperty(volunteer => volunteer.OwnerPhoneNumber, phoneNumber =>
+        {
+            phoneNumber.Property(value => value.Value)
+                .HasColumnName("phone_number")
+                .IsRequired()
+                .HasMaxLength(Constants.MaxPhoneLength);
+        });
+
+        builder.Property(volunteer => volunteer.CreatedAt)
+            .HasColumnName("created_at")
+            .IsRequired();
+
+        builder.Property(volunteer => volunteer.IsDeleted)
+            .HasColumnName("is_deleted")
+            .IsRequired();
+
+        builder.Property(volunteer => volunteer.DeletedAt)
+            .HasColumnName("deleted_at");
+
+        builder.OwnsMany(volunteer => volunteer.SocialNetworks, socialNetworks =>
+        {
+            socialNetworks.ToTable("volunteer_social_networks");
+            socialNetworks.WithOwner().HasForeignKey("volunteer_id");
+
+            socialNetworks.Property(network => network.Name)
+                .HasColumnName("name")
+                .IsRequired()
+                .HasMaxLength(Constants.MaxLowTextLength);
+
+            socialNetworks.Property(network => network.Url)
+                .HasColumnName("url")
+                .IsRequired()
+                .HasMaxLength(Constants.MaxUrlLength);
+        });
+
+        builder.Navigation(volunteer => volunteer.SocialNetworks)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // 6. JSON Коллекция: SocialNetworks
-        builder.OwnsMany(v => v.SocialNetworks, sn =>
+        builder.OwnsMany(volunteer => volunteer.DonationDetails, donationDetails =>
         {
-            sn.ToJson("social_networks");
+            donationDetails.ToTable("volunteer_donation_details");
+            donationDetails.WithOwner().HasForeignKey("volunteer_id");
 
-            sn.Property(s => s.Name)
+            donationDetails.Property(details => details.Name)
+                .HasColumnName("name")
                 .IsRequired()
                 .HasMaxLength(Constants.MaxLowTextLength);
 
-            sn.Property(s => s.Url)
+            donationDetails.Property(details => details.Description)
+                .HasColumnName("description")
                 .IsRequired()
                 .HasMaxLength(Constants.MaxMediumTextLength);
         });
 
-        builder.Navigation(v => v.SocialNetworks)
+        builder.Navigation(volunteer => volunteer.DonationDetails)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
-        // 7. Связь Один-ко-Многим: Volunteer -> Pets
-        builder.HasMany(v => v.Pets)
+        builder.HasMany(volunteer => volunteer.Pets)
             .WithOne()
-            .HasForeignKey("volunteer_id")
+            .HasForeignKey(pet => pet.VolunteerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Navigation(v => v.Pets)
+        builder.Navigation(volunteer => volunteer.Pets)
             .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.HasIndex(volunteer => volunteer.IsDeleted)
+            .HasDatabaseName("ix_volunteers_is_deleted");
+
+        builder.HasQueryFilter(volunteer => !volunteer.IsDeleted);
     }
 }

@@ -1,7 +1,7 @@
 ﻿services:
   postgres:
     container_name: postgres
-    image: postgres
+    image: postgres:18
     restart: always
     environment:
       POSTGRES_DB: pet_family
@@ -11,9 +11,24 @@
       - 5432:5432
     volumes:
       - postgres-data:/var/lib/postgresql/
-    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pet_family"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  seq:
+    container_name: seq
+    image: datalust/seq:latest
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - 5341:5341
+      - 8081:80
+    volumes:
+      - seq-data:/data
+
 volumes:
   postgres-data:
-      
-
-
+  seq-data:

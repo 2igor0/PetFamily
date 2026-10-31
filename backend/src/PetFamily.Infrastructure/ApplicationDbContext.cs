@@ -1,35 +1,28 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using PetFamily.Domain;
 using PetFamily.Domain.PetManagement;
-using PetFamily.Domain.PetManagement.Enums;
 using PetFamily.Domain.PetManagement.SpeciesAndBreed;
+using PetFamily.Domain.Shared.DifferentId;
 using PetFamily.Domain.VolunteerManagement;
+using PetFamily.Infrastructure.Converters;
 
 namespace PetFamily.Infrastructure;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
-    private const string Database = "Database";
-
     public DbSet<Pet> Pets => Set<Pet>();
+
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
+
     public DbSet<Species> Species => Set<Species>();
-    
 
-    private readonly IConfiguration _configuration;
+    public DbSet<Breed> Breeds => Set<Breed>();
 
-    // Оставляем ТОЛЬКО ОДИН конструктор!
-    public ApplicationDbContext(IConfiguration configuration)
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        _configuration = configuration;
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql(_configuration.GetConnectionString(Database));
-        optionsBuilder.UseSnakeCaseNamingConvention();
+        configurationBuilder.Properties<IdVolunteer>().HaveConversion<IdVolunteerConverter>();
+        configurationBuilder.Properties<IdPet>().HaveConversion<IdPetConverter>();
+        configurationBuilder.Properties<IdSpecies>().HaveConversion<IdSpeciesConverter>();
+        configurationBuilder.Properties<IdBreed>().HaveConversion<IdBreedConverter>();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
