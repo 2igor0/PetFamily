@@ -361,6 +361,20 @@ public class Pet : Shared.Entity<IdPet>
         return UnitResult.Success<Error>();
     }
 
+    public UnitResult<Error> ReplaceDonationDetails(IEnumerable<DonationDetails>? donationDetails)
+    {
+        var donationDetailsList = donationDetails?.ToList() ?? [];
+        if (donationDetailsList.Any(details => details is null))
+            return Error.Validation(
+                "pet.donation.details.is.invalid",
+                "Donation details cannot contain null.");
+
+        _donationDetails.Clear();
+        _donationDetails.AddRange(donationDetailsList);
+
+        return UnitResult.Success<Error>();
+    }
+
     public UnitResult<Error> Delete()
     {
         if (IsDeleted)

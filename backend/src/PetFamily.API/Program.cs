@@ -1,6 +1,8 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using PetFamily.API.Filters;
 using PetFamily.API.Middleware;
+using PetFamily.API.Validators;
 using PetFamily.Application;
 using PetFamily.Infrastructure;
 using Serilog;
@@ -21,6 +23,7 @@ builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>
 builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddApplication();
+builder.Services.AddValidatorsFromAssemblyContaining<PetFormValidator>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();

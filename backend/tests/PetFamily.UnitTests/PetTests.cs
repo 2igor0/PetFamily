@@ -177,4 +177,48 @@ public class PetTests
         Assert.True(pet.IsDeleted);
         Assert.NotNull(pet.DeletedAt);
     }
+
+    [Fact]
+    public void Update_ChangesPetFields()
+    {
+        var pet = TestData.CreatePet();
+
+        var result = pet.Update(
+            "Новое имя",
+            TestData.DogSpeciesId,
+            TestData.LabradorBreedId,
+            "Новое описание питомца",
+            "Белый",
+            "Полностью здоров",
+            "Россия",
+            "Казань",
+            "Мира",
+            5,
+            6,
+            45,
+            "+79990000001",
+            true,
+            new DateOnly(2019, 1, 1),
+            false,
+            HelpStatus.FoundHome);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal("Новое имя", pet.Name.Value);
+        Assert.Equal("Белый", pet.Color.Value);
+        Assert.Equal("Казань", pet.CurrentAddress.City);
+        Assert.Equal(HelpStatus.FoundHome, pet.HelpStatus);
+    }
+
+    [Fact]
+    public void ReplaceDonationDetails_ReplacesExistingList()
+    {
+        var pet = TestData.CreatePet();
+        var details = DonationDetails.Create("Карта", "Перевод на карту").Value;
+
+        var result = pet.ReplaceDonationDetails([details]);
+
+        Assert.True(result.IsSuccess);
+        Assert.Single(pet.DonationDetails);
+        Assert.Equal("Карта", pet.DonationDetails[0].Name);
+    }
 }

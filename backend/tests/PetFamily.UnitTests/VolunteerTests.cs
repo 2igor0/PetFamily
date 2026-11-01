@@ -95,6 +95,21 @@ public class VolunteerTests
     }
 
     [Fact]
+    public void UpdateDonationDetails_ReplacesExistingList()
+    {
+        var volunteer = TestData.CreateVolunteer();
+        var details = PetFamily.Domain.PetManagement.ValueObjects.DonationDetails
+            .Create("СБП", "Перевод по номеру телефона")
+            .Value;
+
+        var result = volunteer.UpdateDonationDetails([details]);
+
+        Assert.True(result.IsSuccess);
+        Assert.Single(volunteer.DonationDetails);
+        Assert.Equal("СБП", volunteer.DonationDetails[0].Name);
+    }
+
+    [Fact]
     public void UpdateMainInfo_ChangesMainFields()
     {
         var volunteer = TestData.CreateVolunteer();
