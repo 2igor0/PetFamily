@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Domain.Shared;
 using PetFamily.Domain.Shared.DifferentId;
 using PetFamily.Domain.VolunteerManagement.ValueObjects;
@@ -8,6 +9,7 @@ namespace PetFamily.Application.modules.UpdateVolunteerSocialNetworks;
 
 public class UpdateVolunteerSocialNetworksHandler(
     IVolunteerRepository repository,
+    ICacheInvalidator cacheInvalidator,
     ILogger<UpdateVolunteerSocialNetworksHandler> logger)
 {
     public async Task<UnitResult<Error>> Execute(
@@ -43,6 +45,7 @@ public class UpdateVolunteerSocialNetworksHandler(
             return updateResult.Error;
 
         await repository.SaveChanges(cancellationToken);
+        await cacheInvalidator.InvalidateVolunteerAsync(volunteerId, cancellationToken);
 
         logger.LogInformation("Volunteer {VolunteerId} social networks were updated", volunteerId);
 

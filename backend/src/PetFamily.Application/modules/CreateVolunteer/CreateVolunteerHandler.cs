@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Domain.PetManagement.ValueObjects;
 using PetFamily.Domain.Shared;
 using PetFamily.Domain.Shared.DifferentId;
@@ -10,6 +11,7 @@ namespace PetFamily.Application.modules.CreateVolunteer;
 
 public class CreateVolunteerHandler(
     IVolunteerRepository repository,
+    ICacheInvalidator cacheInvalidator,
     ILogger<CreateVolunteerHandler> logger)
 {
     public async Task<Result<Guid, Error>> Execute(
@@ -60,6 +62,7 @@ public class CreateVolunteerHandler(
         var volunteer = volunteerResult.Value;
 
         await repository.Add(volunteer, token);
+        await cacheInvalidator.InvalidateVolunteerAsync(volunteer.Id.Value, token);
 
         logger.LogInformation(
             "Volunteer {VolunteerId} was created successfully",

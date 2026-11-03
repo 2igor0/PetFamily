@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Domain.Shared;
 using PetFamily.Domain.Shared.DifferentId;
 
@@ -7,6 +8,7 @@ namespace PetFamily.Application.modules.DeleteVolunteer;
 
 public class DeleteVolunteerHandler(
     IVolunteerRepository repository,
+    ICacheInvalidator cacheInvalidator,
     ILogger<DeleteVolunteerHandler> logger)
 {
     public async Task<UnitResult<Error>> Execute(
@@ -29,6 +31,7 @@ public class DeleteVolunteerHandler(
             return deleteResult.Error;
 
         await repository.SaveChanges(cancellationToken);
+        await cacheInvalidator.InvalidateVolunteerAsync(volunteerId, cancellationToken);
 
         logger.LogInformation("Volunteer {VolunteerId} was soft deleted", volunteerId);
 

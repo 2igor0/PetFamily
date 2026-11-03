@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Application.FileStorage;
 using PetFamily.Domain.PetManagement;
 using PetFamily.Domain.PetManagement.Enums;
@@ -12,6 +13,7 @@ namespace PetFamily.Application.modules.CreatePet;
 public class CreatePetHandler(
     IVolunteerRepository repository,
     IFileStorage fileStorage,
+    ICacheInvalidator cacheInvalidator,
     ILogger<CreatePetHandler> logger)
 {
     private const int MaxPhotosCount = 10;
@@ -132,6 +134,10 @@ public class CreatePetHandler(
             }
 
             await repository.SaveChanges(cancellationToken);
+            await cacheInvalidator.InvalidatePetAsync(
+                pet.Id.Value,
+                volunteerId,
+                cancellationToken);
 
             logger.LogInformation(
                 "Pet {PetId} was created for volunteer {VolunteerId}",

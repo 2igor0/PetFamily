@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Application.FileStorage;
 using PetFamily.Domain.PetManagement.Enums;
 using PetFamily.Domain.PetManagement.ValueObjects;
@@ -11,6 +12,7 @@ namespace PetFamily.Application.modules.UpdatePet;
 public class UpdatePetHandler(
     IVolunteerRepository repository,
     IFileStorage fileStorage,
+    ICacheInvalidator cacheInvalidator,
     ILogger<UpdatePetHandler> logger)
 {
     private const int MaxPhotosCount = 10;
@@ -140,6 +142,10 @@ public class UpdatePetHandler(
             }
 
             await repository.SaveChanges(cancellationToken);
+            await cacheInvalidator.InvalidatePetAsync(
+                petId,
+                volunteerId,
+                cancellationToken);
 
             await DeleteFiles(oldPhotoPaths);
 

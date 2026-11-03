@@ -1,5 +1,6 @@
 using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
+using PetFamily.Application.Caching;
 using PetFamily.Domain.PetManagement.ValueObjects;
 using PetFamily.Domain.Shared;
 using PetFamily.Domain.Shared.DifferentId;
@@ -8,6 +9,7 @@ namespace PetFamily.Application.modules.UpdateVolunteerDonationDetails;
 
 public class UpdateVolunteerDonationDetailsHandler(
     IVolunteerRepository repository,
+    ICacheInvalidator cacheInvalidator,
     ILogger<UpdateVolunteerDonationDetailsHandler> logger)
 {
     public async Task<UnitResult<Error>> Execute(
@@ -43,6 +45,7 @@ public class UpdateVolunteerDonationDetailsHandler(
             return updateResult.Error;
 
         await repository.SaveChanges(cancellationToken);
+        await cacheInvalidator.InvalidateVolunteerAsync(volunteerId, cancellationToken);
 
         logger.LogInformation("Volunteer {VolunteerId} donation details were updated", volunteerId);
 

@@ -4,10 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Minio;
 using PetFamily.Application;
+using PetFamily.Application.Caching;
 using PetFamily.Application.FileStorage;
+using PetFamily.Infrastructure.Caching;
 using PetFamily.Infrastructure.FileStorage;
 using PetFamily.Infrastructure.Read;
 using PetFamily.Infrastructure.Repositories;
+using StackExchange.Redis;
 
 namespace PetFamily.Infrastructure;
 
@@ -29,8 +32,36 @@ public static class DependencyInjection
         services.AddScoped<IVolunteerRepository, VolunteersRepository>();
 
         services.AddSingleton<IDbConnectionFactory, NpgsqlConnectionFactory>();
-        services.AddScoped<IVolunteersReadRepository, VolunteersReadRepository>();
-        services.AddScoped<IPetsReadRepository, PetsReadRepository>();
+
+        services.AddScoped<VolunteersReadRepository>();
+        services.AddScoped<IVolunteersReadRepository>(serviceProvider =>
+            new CachedVolunteersReadRepository(
+                serviceProvider.GetRequiredService<VolunteersReadRepository>(),
+                serviceProvider.GetRequiredService<ICacheService>()));
+
+        services.AddScoped<PetsReadRepository>();
+        services.AddScoped<IPetsReadRepository>(serviceProvider =>
+            new CachedPetsReadRepository(
+                serviceProvider.GetRequiredService<PetsReadRepository>(),
+                serviceProvider.GetRequiredService<ICacheService>()));
+
+        var redisConnectionString = configuration.GetConnectionString("Redis");
+        if (string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            services.AddSingleton<ICacheService, NoOpCacheService>();
+        }
+        else
+        {
+            services.AddSingleton<IConnectionMultiplexer>(_ =>
+            {
+                var options = ConfigurationOptions.Parse(redisConnectionString);
+                options.AbortOnConnectFail = false;
+
+                return ConnectionMultiplexer.Connect(options);
+            });
+
+            services.AddSingleton<ICacheService, RedisCacheService>();
+        }
 
         services.Configure<MinioOptions>(configuration.GetSection(MinioOptions.SectionName));
 

@@ -2,6 +2,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using PetFamily.Application;
+using PetFamily.Application.Caching;
 using PetFamily.Application.FileStorage;
 using PetFamily.Application.modules.CreatePet;
 using PetFamily.Domain.Shared;
@@ -14,6 +15,7 @@ public class CreatePetHandlerTests
 {
     private readonly IVolunteerRepository _repository = Substitute.For<IVolunteerRepository>();
     private readonly IFileStorage _fileStorage = Substitute.For<IFileStorage>();
+    private readonly ICacheInvalidator _cacheInvalidator = Substitute.For<ICacheInvalidator>();
 
     [Fact]
     public async Task Execute_ValidRequest_CreatesPetAndUploadsPhotos()
@@ -36,6 +38,10 @@ public class CreatePetHandlerTests
         Assert.StartsWith($"{pet.Id.Value}/", pet.Photos[0].Path);
 
         await _repository.Received(1).SaveChanges(Arg.Any<CancellationToken>());
+        await _cacheInvalidator.Received(1).InvalidatePetAsync(
+            pet.Id.Value,
+            volunteer.Id.Value,
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -147,6 +153,7 @@ public class CreatePetHandlerTests
         return new CreatePetHandler(
             _repository,
             _fileStorage,
+            _cacheInvalidator,
             NullLogger<CreatePetHandler>.Instance);
     }
 

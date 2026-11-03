@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using PetFamily.Application.Caching;
 using PetFamily.Application.modules.CreatePet;
 using PetFamily.Application.modules.CreateVolunteer;
 using PetFamily.Application.modules.DeletePet;
@@ -26,6 +27,8 @@ public static class DependencyInjection
         services.AddScoped<CreatePetHandler>();
         services.AddScoped<UpdatePetHandler>();
         services.AddScoped<DeletePetHandler>();
+
+        services.AddScoped<ICacheInvalidator, CacheInvalidator>();
 
         return services;
     }
